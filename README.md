@@ -131,6 +131,14 @@ See `backend/.env.example`. MongoDB is required. The API explicitly selects `MON
 - **Camera scanning:** Requires browser `BarcodeDetector` support and camera permission on HTTPS or localhost. Manual lookup remains available when unsupported or denied.
 - **Fonts:** The interface optionally loads DM Sans and Manrope from Google Fonts; system font fallbacks are included.
 
+## Separate Render deployment
+
+The backend and Vite frontend can be deployed as separate Render services:
+
+- **Backend Web Service:** repository root directory `backend`, build command `npm install`, start command `npm start`. Set `NODE_ENV=production`, `HOST=0.0.0.0`, `MONGODB_URI`, `MONGODB_DB_NAME=medtrack`, and `FRONTEND_ORIGIN` to the exact HTTPS origin of the Static Site. Render supplies `PORT`.
+- **Frontend Static Site:** repository root directory `frontend`, build command `npm install && npm run build`, publish directory `dist`. Set `VITE_MEDTRACK_API_URL` to the backend service origin, without a trailing slash. Vite embeds this value at build time through `vite.config.js`; redeploy the Static Site after changing it.
+- Allow the backend service's outbound IP addresses in MongoDB Atlas. Keep database credentials in Render's backend environment variables; never commit `.env` files.
+
 ## Deployment warning
 
 Use HTTPS in production and protect database credentials. Existing databases are migrated at startup by replacing the legacy unique workspace index with a non-unique index so invited staff can share workspaces. Appointment records are private to their workspace, but the application has not been assessed for regulatory, clinical, pharmacy, or privacy-law compliance. Email delivery, email verification, and password reset still require an email provider and additional implementation. Do not use it as a clinical decision or dispensing system without appropriate independent review.

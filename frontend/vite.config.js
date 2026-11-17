@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  define: {
+    'window.MEDTRACK_API_URL': JSON.stringify(process.env.VITE_MEDTRACK_API_URL || ''),
+  },
   server: {
     host: '127.0.0.1',
     port: 5173,
