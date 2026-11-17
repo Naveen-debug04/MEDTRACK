@@ -626,11 +626,18 @@ document.addEventListener('submit', async (event) => {
       $('#register-confirm-password').focus();
       return;
     }
+    const inviteCode = $('#register-invite-code').value.trim();
+    if (inviteCode && inviteCode.length < 32) {
+      feedback.textContent = 'That is not a complete invitation code. Leave this field blank to create a new workspace, or paste the full code from its owner.';
+      $('#invitation-toggle').setAttribute('aria-expanded', 'true');
+      syncInvitationRegistration();
+      $('#register-invite-code').focus();
+      return;
+    }
     const submit = $('button[type="submit"]', form);
     submit.disabled = true;
     const data = Object.fromEntries(new FormData(form).entries());
     const email = data.email;
-    const inviteCode = String(data.inviteCode || '').trim();
     delete data.confirmPassword;
     delete data.inviteCode;
     let endpoint = '/auth/register';
@@ -643,6 +650,7 @@ document.addEventListener('submit', async (event) => {
     try {
       await api(endpoint, { method: 'POST', body: JSON.stringify(data) });
       form.reset();
+      $('#invitation-toggle').setAttribute('aria-expanded', 'false');
       $('#organization-field').classList.add('hidden');
       $('#register-organization').required = false;
       syncInvitationRegistration();
@@ -776,6 +784,14 @@ $('#menu-toggle').addEventListener('click', () => $('#sidebar').classList.toggle
 $('#register-role').addEventListener('change', (event) => {
   syncInvitationRegistration();
 });
+$('#invitation-toggle').addEventListener('click', () => {
+  const toggle = $('#invitation-toggle');
+  const opening = toggle.getAttribute('aria-expanded') !== 'true';
+  toggle.setAttribute('aria-expanded', String(opening));
+  if (!opening) $('#register-invite-code').value = '';
+  syncInvitationRegistration();
+  if (opening) $('#register-invite-code').focus();
+});
 $('#register-invite-code').addEventListener('input', syncInvitationRegistration);
 $('#modal-backdrop').addEventListener('click', (event) => {
   if (event.target.id === 'modal-backdrop') closeModal();
@@ -805,6 +821,14 @@ initialize();
 
 function syncInvitationRegistration() {
   const inviteCode = $('#register-invite-code').value.trim();
+  const invitationToggle = $('#invitation-toggle');
+  const inviteCodeField = $('#invite-code-field');
+  if (inviteCode) invitationToggle.setAttribute('aria-expanded', 'true');
+  const invitationOpen = invitationToggle.getAttribute('aria-expanded') === 'true';
+  inviteCodeField.classList.toggle('hidden', !invitationOpen);
+  invitationToggle.textContent = invitationOpen
+    ? 'Create a new private workspace instead'
+    : 'Have an invitation? Join an existing workspace';
   const roleField = $('#register-role').closest('.form-field');
   const organizationField = $('#organization-field');
   const roleInput = $('#register-role');
