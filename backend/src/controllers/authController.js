@@ -28,7 +28,9 @@ const invitationRegistrationSchema = z.object({
   fullName: z.string().trim().min(2, 'Enter your full name').max(120),
   email: z.string().trim().email('Enter a valid email address').max(254).transform((value) => value.toLowerCase()),
   password: z.string().min(8, 'Password must be at least 8 characters').max(128),
-  inviteCode: z.string().min(32).max(128)
+  inviteCode: z.string().trim()
+    .min(32, 'Paste the complete invitation code from the workspace owner, or leave this field empty to register normally')
+    .max(128, 'Invitation code is invalid')
 }).strict();
 
 function userResponse(user) {
